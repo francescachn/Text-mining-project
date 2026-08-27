@@ -245,10 +245,20 @@ This prints a public `loca.lt` URL and a tunnel password (your outbound IP) need
 
 ## Authors
 
-Developed by **Francesca** ([@francescachn](https://github.com/francescachn)) as a text mining / NLP course project. Repository branch history suggests additional contributions (e.g. the `Marco` branch) — update this section with full contributor credits.
+Authors
+GROUP NAME: TransforMiners
+
+- Cheng Ting Francesca
+- Fonio Gabriella
+- Stranges Marco
+
+
+Course
+Developed for Data Visualization and Text Mining course at Universita Cattolica del Sacro Cuore, Milan (IT).
 
 ---
 
-## License
+## Course
 
-No license file is currently included in this repository. Add a `LICENSE` file (e.g. MIT) if you intend this project to be reused by others; until then, all rights are reserved by default.
+Developed for Data Visualization and Text Mining course at Universita Cattolica del Sacro Cuore, Milan (IT).
+
