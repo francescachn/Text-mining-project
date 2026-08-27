@@ -252,10 +252,6 @@ GROUP NAME: TransforMiners
 - Fonio Gabriella
 - Stranges Marco
 
-
-Course
-Developed for Data Visualization and Text Mining course at Universita Cattolica del Sacro Cuore, Milan (IT).
-
 ---
 
 ## Course
