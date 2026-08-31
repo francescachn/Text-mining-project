@@ -51,7 +51,7 @@ Given a corpus of short, template-generated news headlines, this project builds 
 ## Project Structure
 
 ```
-Text-mining-project/                 # branch: Gabriella
+Text-mining-project/                 
 ├── TransforMiners Project.ipynb     # main pipeline: EDA, leakage-safe split, spaCy, NMF/LDA,
 │                                     # BiLSTM/BERT/DistilBERT training, artifact export, dashboard
 ├── train.csv                        # training data — 3,200 rows: `content`, `category`
@@ -291,10 +291,13 @@ python app.py
 
 ## Authors
 
-Developed by **Francesca** ([@francescachn](https://github.com/francescachn)) and collaborators as a Text Mining / NLP course project (Università Cattolica del Sacro Cuore) — this notebook's authorship trail (branch `Gabriella`) suggests Gabriella as a contributor on this iteration, alongside earlier work by others on the `Marco` branch. Update this section with full contributor credits.
+GROUP **TRANSFORMINERS**:
+- Cheng Ting Francesca
+- Fonio Gabriella
+- Stranges Marco
 
 ---
 
-## License
+## Course
 
-No license file is currently included in this repository. Add a `LICENSE` file (e.g. MIT) if you intend this project to be reused by others; until then, all rights are reserved by default.
+Developed for Data Visualization and Text Mining course at Universita Cattolica del Sacro Cuore, Milan (IT)
