@@ -1,10 +1,12 @@
-# 📰 Text Mining Project — News Category Classification
+# 📰 TransforMiners — News Text Mining & Classification
 
-A text mining and NLP pipeline that classifies short news snippets into five categories — **politics, business, entertainment, sports, technology** — using classical topic modeling (NMF, LDA), a from-scratch **BiLSTM**, and fine-tuned **BERT** / **DistilBERT** transformers, wrapped in an interactive **Plotly Dash** dashboard.
+A full text-mining pipeline that classifies short news snippets into five categories — **politics, business, entertainment, sports, technology** — combining classical topic modeling (NMF, LDA) with a from-scratch **BiLSTM** and fine-tuned **BERT** / **DistilBERT** transformers, all served through a fully-wired, real-model **Plotly Dash** dashboard. Developed for a Text Mining / NLP course project (Università Cattolica del Sacro Cuore).
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/francescachn/Text-mining-project/blob/main/Copia_di_progetto_data_.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/francescachn/Text-mining-project/blob/Gabriella/TransforMiners%20Project.ipynb)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
+> This README documents the project's current, most complete pipeline (notebook: `TransforMiners Project.ipynb`). Earlier iterations of the same idea exist on other branches of this repository (`main`, `Marco`) and are superseded by what's described here.
 
 ---
 
@@ -15,16 +17,18 @@ A text mining and NLP pipeline that classifies short news snippets into five cat
 - [Dataset](#dataset)
 - [Methodology](#methodology)
   - [1. EDA & Data Cleaning](#1-eda--data-cleaning)
-  - [2. Avoiding Data Leakage](#2-avoiding-data-leakage)
+  - [2. Handling Data Leakage](#2-handling-data-leakage)
   - [3. Linguistic Analysis (spaCy)](#3-linguistic-analysis-spacy)
   - [4. Unsupervised Topic Modeling (NMF & LDA)](#4-unsupervised-topic-modeling-nmf--lda)
-  - [5. Supervised Classification](#5-supervised-classification)
+  - [5. Word Cloud](#5-word-cloud)
+  - [6. Supervised Classification](#6-supervised-classification)
+  - [7. Persisting Model Artifacts](#7-persisting-model-artifacts)
 - [Results](#results)
 - [Dashboard](#dashboard)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Key Design Decisions](#key-design-decisions)
-- [Known Limitations & Future Work](#known-limitations--future-work)
+- [Known Limitations & Notes](#known-limitations--notes)
 - [Tech Stack](#tech-stack)
 - [Authors](#authors)
 - [License](#license)
@@ -35,28 +39,43 @@ A text mining and NLP pipeline that classifies short news snippets into five cat
 
 Given a corpus of short, template-generated news headlines, this project builds a full text-mining pipeline end to end:
 
-1. **Explore & clean** the raw text (dedup analysis, length distributions, vocabulary coverage).
-2. **Split safely** using a group-aware strategy that eliminates train/validation leakage caused by duplicate sentences.
+1. **Explore & clean** the raw text (duplicate analysis, length distributions, vocabulary coverage, word cloud).
+2. **Split safely**, comparing two group-aware strategies to eliminate train/validation leakage caused by duplicate sentences, and picking the one that also preserves class balance.
 3. **Profile the language** with spaCy (POS tagging, lemmatization, dependency parsing).
-4. **Discover latent topics** with two unsupervised methods (NMF and LDA) and compare them against the ground-truth labels.
-5. **Train and compare three classifiers** of increasing complexity — a custom BiLSTM, fine-tuned BERT, and fine-tuned DistilBERT.
-6. **Present everything interactively** in a multi-tab Plotly Dash dashboard.
+4. **Discover latent topics** with two unsupervised methods (NMF and LDA).
+5. **Train and compare three classifiers** — a custom class-weighted BiLSTM, and fine-tuned BERT and DistilBERT.
+6. **Persist the trained artifacts** (weights, tokenizers, vocab, label encoder) to disk.
+7. **Serve everything live** in a multi-tab Plotly Dash dashboard that loads those real artifacts and runs actual inference — not a mock.
 
 ---
 
 ## Project Structure
 
 ```
-Text-mining-project/
-├── Copia_di_progetto_data_.ipynb   # main pipeline: EDA, cleaning, spaCy, NMF/LDA, BiLSTM, BERT, DistilBERT
-├── dashboard.ipynb                 # generates app.py and launches the dashboard (Colab + localtunnel)
-├── app.py                          # standalone Plotly Dash app, produced by `%%writefile` in dashboard.ipynb
-├── train.csv                       # training data — 3,200 rows: `content`, `category`
-├── test.csv                        # held-out test data — 800 rows: `content` only
+Text-mining-project/                 # branch: Gabriella
+├── TransforMiners Project.ipynb     # main pipeline: EDA, leakage-safe split, spaCy, NMF/LDA,
+│                                     # BiLSTM/BERT/DistilBERT training, artifact export, dashboard
+├── train.csv                        # training data — 3,200 rows: `content`, `category`
+├── test.csv                         # held-out test data — 800 rows: `content` only
+│
+├── app.py                           # generated by `%%writefile` inside the notebook — the Dash app
+├── real_train_data.csv              # cleaned training data, exported for the dashboard
+├── real_metrics.json                # validation metrics + confusion matrices, computed from the
+│                                     # actually reloaded models (used by the "Models & Metrics" tab)
+├── eda_extra.json                   # precomputed EDA data for the dashboard (lengths, vocab
+│                                     # coverage, POS distribution, NMF/LDA topics)
+│
+├── bilstm_model_weights.pth         # trained BiLSTM weights
+├── bilstm_config.json               # BiLSTM architecture config (vocab_size, dims, max_len)
+├── bilstm_word_index.json           # BiLSTM vocabulary (word → index)
+├── label_encoder.pkl                # fitted sklearn LabelEncoder (category ↔ id)
+├── distilbert_model/                # fine-tuned DistilBERT (config, tokenizer, safetensors)
+├── bert_model/                      # fine-tuned BERT-Base (config, tokenizer, safetensors)
+│
 └── README.md
 ```
 
-> **Note:** at the time of writing, `dashboard.ipynb` lives on the `Marco` branch of this repository while the main pipeline notebook is on `main`. Merge (or copy) it into `main` before following the run instructions below, or adjust the paths if your layout differs.
+All of the generated artifacts (`app.py` and everything below it) are produced by running the notebook top-to-bottom — they are not committed by hand.
 
 ---
 
@@ -69,12 +88,12 @@ Text-mining-project/
 
 **Categories** (well balanced, ~19.5–20.4% each): `politics` (654), `technology` (652), `sports` (639), `entertainment` (631), `business` (624).
 
-**Important characteristic:** the corpus is *template-generated* — the 3,200 training rows are built from only **152 unique sentence templates**, each repeated ~21 times on average (e.g. *"The senator announced new taxation policy today"* with the policy name swapped). This is expected and intentional (it preserves training volume), but it has two direct consequences that shaped the methodology below:
+**Important characteristic:** the corpus is *template-generated* — the 3,200 training rows are built from only **152 unique sentence templates**, each repeated ~21 times on average (e.g. *"The senator announced new taxation policy today"* with the policy name swapped). Both `train.csv` (3,048/3,200 duplicate rows) and `test.csv` (665/800 duplicate rows) show this pattern. It's expected and intentional — dropping duplicates would collapse the training set to ~150 rows — but it has two direct consequences for the methodology:
 
-- Duplicate rows are **not dropped** (doing so would shrink the training set from 3,200 to 152 rows).
-- The train/validation split **cannot be a naive random or stratified split** — see [Avoiding Data Leakage](#2-avoiding-data-leakage).
+- Duplicate rows are **kept**, not dropped.
+- The train/validation split **cannot be a naive random or stratified split** — see [Handling Data Leakage](#2-handling-data-leakage).
 
-Vocabulary is small and dense: 141 unique word types across 21,893 tokens, with just 88 words covering 80% of the corpus — again a signature of templated text.
+Vocabulary is small and dense: 141 unique word types across 21,893 tokens, with just 88 words covering 80% of the corpus.
 
 ---
 
@@ -82,106 +101,138 @@ Vocabulary is small and dense: 141 unique word types across 21,893 tokens, with 
 
 ### 1. EDA & Data Cleaning
 
-- Checked for missing values (none) and duplicates (3,048 / 3,200 duplicate rows in train — expected, see above).
+- Checked for missing values (none) and duplicates (see above — expected).
 - Verified class balance across the 5 categories via count plots.
 - Computed character/word counts per document (avg. ~6–7 words, 40–60 characters).
-- `clean_text()`: lowercases, strips HTML tags, removes punctuation/special characters, and normalizes whitespace via regex. Applied to both `train.csv` and `test.csv` (rows that become empty after cleaning are dropped from train only — the test set must keep one prediction per row).
-- Plotted word-count and vocabulary-coverage distributions to size later model hyperparameters (`MAX_LEN`, `MAX_VOCAB`).
+- `clean_text()`: lowercases, strips HTML tags, removes punctuation/special characters, and normalizes whitespace via regex. Applied to both `train.csv` and `test.csv` (rows that become empty after cleaning are dropped from train only — the test set must keep one prediction per row for submission).
+- The cleaned training data is saved as `real_train_data.csv`, which the dashboard reads directly instead of recomputing cleaning at serve time.
 
-### 2. Avoiding Data Leakage
+### 2. Handling Data Leakage
 
-Because many rows share **identical text**, a standard `train_test_split` (even stratified by category) can place copies of the same sentence in both the training and validation sets. Verified empirically: with a naive stratified split, **100% of validation rows had their exact sentence already present in training** — a textbook case of data leakage that turns "validation accuracy" into "memorization accuracy."
+Because many rows share **identical text**, a standard split (even stratified by category) can place copies of the same sentence in both train and validation. Verified empirically: with a naive stratified split, **100% of validation rows had their exact sentence already present in training**.
 
-**Fix:** [`GroupShuffleSplit`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupShuffleSplit.html) from scikit-learn, grouping on the cleaned sentence text, so that all copies of a given sentence move together into either train or validation:
+Two group-aware splitting strategies (grouping on the cleaned sentence text) were implemented and compared:
 
-```python
-gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=2)
-train_idx, val_idx = next(gss.split(train_df, groups=train_df["cleaned_content"]))
-```
+| Strategy | Method | Train / Val rows | Content overlap | Validation class balance |
+|---|---|---|---|---|
+| **1** | `GroupShuffleSplit` | 2,623 / 577 | 0 ✅ | Uneven — from 12.65% (business) to 26.86% (entertainment) |
+| **2 (chosen)** | `StratifiedGroupKFold` (5 folds, first fold used) | 2,562 / 638 | 0 ✅ | Balanced — 19.44%–20.53% across all 5 categories |
 
-Result: **2,623 train / 577 validation** rows, with **zero content overlap** — confirmed with an explicit assertion in the notebook.
+Both strategies eliminate leakage (verified with an explicit zero-overlap assertion), but `GroupShuffleSplit` alone still leaves noticeably skewed validation folds because it doesn't account for the uneven number of unique templates per category (20–40 templates depending on category). **`StratifiedGroupKFold` is adopted as the definitive strategy** for all downstream training and evaluation, since it jointly optimizes for zero leakage *and* class balance.
 
 ### 3. Linguistic Analysis (spaCy)
 
-Using `en_core_web_sm`:
+Using `en_core_web_sm`, on the leakage-free training split:
 
 - Token-level POS tags, lemmas, syntactic dependencies, and head words.
-- A normalized, stacked POS-tag profile **per category**, to check whether different news domains carry distinct grammatical signatures.
-- A dependency-tree visualization (`displacy`) for a sample sentence, illustrating subject/verb/object relations.
+- A normalized, stacked POS-tag profile **per category**, exported into `eda_extra.json` for the dashboard.
+- A dependency-tree visualization (`displacy`) for a sample sentence.
 
 ### 4. Unsupervised Topic Modeling (NMF & LDA)
 
-Two complementary approaches, each configured for 5 topics (matching the 5 known categories):
+Two complementary approaches, each configured for 5 topics:
 
 | Method | Vectorization | Notes |
 |---|---|---|
 | **NMF** | TF-IDF (`max_features=1000`, English stopwords) | Deterministic, linear-algebra based; sharp, focused keyword clusters |
 | **LDA** | Bag-of-words / raw counts | Probabilistic (Dirichlet-based); broader, contextual semantic groupings |
 
-Both algorithms independently converged on the same five macro-themes (business operations, economy/finance, technology, entertainment/arts, public policy/education), which cross-validates the semantic separability of the dataset ahead of supervised modeling.
+Both algorithms converge on the same five macro-themes (business operations, economy/finance, technology, entertainment/arts, public policy/education). Topic keywords are exported into `eda_extra.json` and rendered as tables in the dashboard's EDA tab.
 
-### 5. Supervised Classification
+### 5. Word Cloud
 
-Three models of increasing complexity, all evaluated on the leakage-free validation split:
+A global word cloud (`wordcloud` library) over the full training corpus is generated both inline in the notebook and, separately, regenerated live inside `app.py` for the dashboard's "Word Cloud" sub-tab (rendered as a base64-encoded PNG).
 
-- **BiLSTM (PyTorch, from scratch):** a custom vocabulary (`<PAD>`/`<UNK>` reserved indices), post-padded sequences (`MAX_LEN=12`), an embedding layer, a bidirectional LSTM (concatenating the final forward/backward hidden states), and a dropout (p=0.3) + dense classification head.
-- **BERT (`bert-base-uncased`, fine-tuned):** Hugging Face `Trainer` API, sequence classification head on top of the pretrained encoder.
-- **DistilBERT (`distilbert-base-uncased`, fine-tuned):** same fine-tuning recipe, ~40% fewer parameters than BERT.
+### 6. Supervised Classification
+
+Three models, all evaluated on the `StratifiedGroupKFold` validation split:
+
+- **BiLSTM (PyTorch, from scratch):** custom vocabulary (`<PAD>`/`<UNK>` reserved indices, 140 words), post-padded sequences (`MAX_LEN=12`), an embedding layer (dim 64), a bidirectional LSTM (hidden dim 64, concatenating the final forward/backward hidden states), dropout (p=0.3), and a class-weighted `CrossEntropyLoss` to counter the mild residual class imbalance left by the group split.
+- **BERT (`bert-base-uncased`, fine-tuned):** Hugging Face `Trainer` API, sequence classification head.
+- **DistilBERT (`distilbert-base-uncased`, fine-tuned):** same recipe, with an explicit class-weighted loss (`WeightedTrainer`) matching the BiLSTM's approach.
+
+### 7. Persisting Model Artifacts
+
+To move from "notebook experiment" to "servable dashboard", every trained component is saved to disk:
+
+- BiLSTM → `bilstm_model_weights.pth` + `bilstm_config.json` + `bilstm_word_index.json`, with explicit assertions guarding against saving mismatched or wrong-architecture weights.
+- BERT / DistilBERT → re-trained via a dedicated `train_transformer()` helper (this time tokenized with `max_length=64` instead of 12) and saved with `trainer.save_model()` / `tokenizer.save_pretrained()` into `bert_model/` and `distilbert_model/`.
+- Shared → `label_encoder.pkl` (category ↔ id mapping).
+- Validation metrics and confusion matrices for all three **reloaded** models are recomputed from these saved artifacts and written to `real_metrics.json` — this is what the dashboard actually displays (see [Known Limitations](#known-limitations--notes) for an important caveat here).
 
 ---
 
 ## Results
 
+**As reported during in-notebook training** (on the `StratifiedGroupKFold` validation split, 638 rows):
+
 | Model | Architecture | Parameters | Epochs | Best Val Loss | Macro F1 |
 |---|---|---:|---:|---:|---:|
-| **BiLSTM** | RNN (custom, PyTorch) | 76,357 | 5 | 0.0506 | 1.00 |
-| **DistilBERT** | Transformer (distilled) | 66,957,317 | 2 | 0.0102 | 1.00 |
-| **BERT-Base** | Transformer | 109,486,085 | 2 | 0.0048 | 1.00 |
+| **BiLSTM** | RNN (custom, PyTorch) | 76,165 | 5 | 0.0607 | 1.00 |
+| **DistilBERT** | Transformer (distilled, class-weighted) | 66,957,317 | 2 | 0.0103 | 1.00 |
+| **BERT-Base** | Transformer | 109,486,085 | 2 | 0.0046 | 1.00 |
 
-All three models reach a **perfect macro F1-score (1.00)** on the 577-row validation split. This is a direct consequence of the dataset's templated, low-diversity structure (152 unique sentences) rather than evidence that any architecture "solves" news classification in general — see [Known Limitations](#known-limitations--future-work).
+**As recomputed from the saved/reloaded artifacts** (`real_metrics.json`, what the dashboard shows):
 
-Practical takeaways from the notebook:
+| Model | Accuracy | Macro F1 |
+|---|---:|---:|
+| **BiLSTM** | 0.951 | 0.952 |
+| **DistilBERT** | 1.00 | 1.00 |
+| **BERT-Base** | 1.00 | 1.00 |
+
+DistilBERT and BERT-Base reproduce their training-time perfect scores after reload. **BiLSTM does not** — see the first item under [Known Limitations](#known-limitations--notes) for why, and how to fix it.
+
+Practical takeaways:
 
 - The transformers converge in fewer epochs (2 vs. 5) thanks to self-attention capturing long-range dependencies more directly than a recurrent model.
-- **DistilBERT** offers effectively the same accuracy as **BERT** here at ~39% of the parameter count and lower inference latency — a good default choice for resource-constrained deployment.
-- **BiLSTM** is by far the lightest model (76K vs. 67M/109M parameters) and is a reasonable choice when compute is heavily constrained, provided the real-world text stays reasonably close in style to the training distribution.
+- **DistilBERT** matches **BERT**'s accuracy here at ~61% of the parameter count and lower inference cost — a good default for resource-constrained deployment.
+- **BiLSTM** is by far the lightest model (76K vs. 67M/109M parameters), but is also the most sensitive to how exactly text is preprocessed at inference time, as the reload discrepancy above shows.
 
 ---
 
 ## Dashboard
 
-`dashboard.ipynb` writes out a self-contained **Plotly Dash** application (`app.py`, dark theme via `dash-bootstrap-components`'s `CYBORG` theme) and launches it — in its current form, from Google Colab via `localtunnel` for a shareable public URL.
+`app.py` — written out via `%%writefile` inside the notebook itself (cell "Dashboard") — is a self-contained **Plotly Dash** application (dark theme via `dash-bootstrap-components`'s `CYBORG` theme). Unlike a purely illustrative demo, it **loads the real trained artifacts** produced in [step 7](#7-persisting-model-artifacts) above and runs genuine model inference.
 
 **Tabs:**
 
 | Tab | Contents |
 |---|---|
-| **Home** | Project overview and the 5 target categories |
-| **Dataset** | Paginated, searchable preview of the (sample) data |
-| **EDA** | Category distribution bar chart; text-length and word-count histograms |
-| **Models & Metrics** | Side-by-side comparison table (architecture, parameters, macro F1/precision/recall, inference latency) and confusion-matrix heatmaps per model |
-| **Live Test** | Free-text box + model selector (BiLSTM / DistilBERT / BERT-Base) + "Classify Text" button, returning a predicted category with a per-class probability bar chart and simulated latency for each selected model |
+| **Home** | Project overview, dataset stats, leakage-handling summary, and a results table |
+| **Dataset** | Paginated table of `real_train_data.csv` (category + content) |
+| **EDA** | Sub-tabs: category distribution, text length (char/word count), vocabulary coverage curve, POS-tag profile by category, NMF topics, LDA topics, and the word cloud |
+| **Models & Metrics** | Metrics table and confusion-matrix heatmaps for all three models, sourced from `real_metrics.json` |
+| **Live Test** | Free-text box + model checklist (BiLSTM / DistilBERT / BERT-Base) + "Analyze with Real Models" button — runs the actual loaded models and returns a predicted category with a per-class probability bar chart, for each selected model |
 
-> **Note on the current implementation:** to keep `app.py` fully self-contained and instantly runnable without bundling multi-hundred-MB model checkpoints, it currently (a) generates a small **synthetic placeholder dataset** at startup instead of loading `train.csv`/`test.csv`, and (b) drives the **Live Test** tab with a lightweight **keyword-matching heuristic** rather than the actual trained BiLSTM/BERT/DistilBERT weights. The confusion matrices and metrics table reflect the real results reported in [Results](#results); the live inference is illustrative. See [Future Work](#known-limitations--future-work) for how to wire up the real models.
+**Required files alongside `app.py` at runtime:** `eda_extra.json`, `real_train_data.csv`, `real_metrics.json`, `bilstm_config.json`, `bilstm_word_index.json`, `label_encoder.pkl`, `bilstm_model_weights.pth`, `distilbert_model/`, `bert_model/`. All of these are produced by running the notebook end to end.
+
+**How it's launched (as authored, from Google Colab):**
+
+```bash
+pip install dash dash-bootstrap-components wordcloud transformers -q
+# %%writefile app.py  →  writes the dashboard source
+nohup python app.py > server.log 2>&1 &
+npx -y localtunnel --port 8050
+```
+
+`localtunnel` prints a public `loca.lt` URL; the tunnel password is the outbound IP fetched from `icanhazip.com` and printed just above it.
 
 ---
 
 ## Installation
 
-**Requirements:** Python 3.10+.
+**Requirements:** Python 3.10+. A GPU is recommended (not required) for fine-tuning BERT/DistilBERT.
 
 ```bash
-git clone https://github.com/francescachn/Text-mining-project.git
+git clone -b Gabriella https://github.com/francescachn/Text-mining-project.git
 cd Text-mining-project
 
-pip install -U spacy scikit-learn numpy pandas seaborn matplotlib torch transformers datasets
+pip install -U spacy scikit-learn numpy pandas seaborn matplotlib torch transformers datasets evaluate accelerate wordcloud
 python -m spacy download en_core_web_sm
 
 # for the dashboard
 pip install dash dash-bootstrap-components plotly
 ```
-
-A GPU is recommended (but not required) for fine-tuning BERT/DistilBERT.
 
 ---
 
@@ -189,72 +240,62 @@ A GPU is recommended (but not required) for fine-tuning BERT/DistilBERT.
 
 ### Run the analysis notebook
 
-Open `Copia_di_progetto_data_.ipynb` in Jupyter or click the "Open in Colab" badge above. Run cells top-to-bottom — cell 1 installs dependencies, later cells expect `train.csv`/`test.csv` to be present in the working directory.
+Open `TransforMiners Project.ipynb` in Jupyter/Colab (the first cell clones this repository's `Gabriella` branch so `train.csv`/`test.csv` are available) and run cells top-to-bottom. This regenerates every artifact listed in [Project Structure](#project-structure), including `app.py`.
 
 ### Run the dashboard
 
-**Locally:**
+**Locally**, once all the artifacts above exist in the working directory:
 
 ```bash
 python app.py
 # then open http://localhost:8050
 ```
 
-**From Google Colab** (as originally authored in `dashboard.ipynb`):
+**From Google Colab** (as authored in the notebook):
 
 ```python
-!pip install dash dash-bootstrap-components scikit-learn plotly -q
-!python app.py & npx -y localtunnel --port 8050 --bypass-tunnel-reminder
+!pip install dash dash-bootstrap-components wordcloud transformers -q
+!nohup python app.py > server.log 2>&1 &
+!npx -y localtunnel --port 8050
 ```
-
-This prints a public `loca.lt` URL and a tunnel password (your outbound IP) needed to open it.
 
 ---
 
 ## Key Design Decisions
 
 - **Duplicates were kept, not dropped**, because the corpus is intentionally template-based; dropping them would collapse 3,200 rows into 152.
-- **`GroupShuffleSplit` over `train_test_split`**, to eliminate leakage from duplicate sentences between train and validation — verified with an explicit zero-overlap assertion.
-- **`MAX_LEN=12`**, sized empirically from the vocabulary-coverage and word-count analysis (documents average 6–7 words, max ~10–12).
-- **Dropout (p=0.3) in the BiLSTM**, added specifically to counter the overfitting risk created by a small, repetitive vocabulary.
+- **`StratifiedGroupKFold` over `GroupShuffleSplit`**, chosen after comparing both empirically — both eliminate leakage, but only the stratified version also keeps validation class proportions close to the true distribution.
+- **`MAX_LEN=12`** for the BiLSTM and the in-notebook transformer runs, sized from the vocabulary-coverage/word-count analysis (documents average 6–7 words); the transformers re-trained for deployment ([step 7](#7-persisting-model-artifacts)) instead use `max_length=64` for more headroom on arbitrary live input.
+- **Class-weighted loss for BiLSTM and DistilBERT**, added to counter the mild class imbalance introduced by grouping on 152 templates unevenly distributed across categories (20–40 templates per class).
+- **Real artifacts, not a mock, power the dashboard.** Model weights, tokenizers, the vocabulary, and the label encoder are all persisted to disk and reloaded by `app.py`, so "Live Test" reflects the actual trained models.
 
 ---
 
-## Known Limitations & Future Work
+## Known Limitations & Notes
 
-- **Synthetic, templated corpus.** The perfect F1 scores reflect the low diversity of the dataset (152 unique templates), not necessarily generalization to real, unstructured news text. Before any real-world deployment, models should be evaluated on genuinely novel, noisy text.
-- **No early stopping in the BiLSTM/BERT runs** — worth adding if extending training beyond the current epoch counts, especially on less templated data.
-- **Dashboard uses a keyword-heuristic + synthetic sample data** for the Live Test tab, rather than the trained checkpoints. To connect real inference:
-  1. Save the trained model artifacts from the main notebook (e.g. `torch.save(...)` for the BiLSTM, `model.save_pretrained(...)` for BERT/DistilBERT, plus the tokenizer/vocab and `LabelEncoder`).
-  2. Load them once at `app.py` startup.
-  3. Replace `run_inference()` with real forward passes through each loaded model.
-  4. Replace the synthetic `df_master`/`df_test` with the actual cleaned `train.csv`/`test.csv`.
-- **Production serving:** the Dash dev server (and the Colab/localtunnel setup) is explicitly not meant for production; consider `gunicorn`/`waitress` behind a proper reverse proxy for a persistent deployment.
+- **BiLSTM inference in `real_metrics.json`/the dashboard uses raw, uncleaned text.** The validation metrics that power the "Models & Metrics" tab call `bilstm_predict_batch(val_data["content"])` — the *raw* column — rather than `val_data["cleaned_content"]`. Since the BiLSTM's vocabulary (`word_index`) was built from lowercased, punctuation-stripped tokens, feeding it raw (capitalized, punctuated) text pushes many tokens to the `<UNK>` index, which is the most likely explanation for the accuracy drop from a perfect 1.00 (in-training) to 0.951 (post-reload). BERT/DistilBERT are far less affected because their WordPiece tokenizers already normalize case and punctuation internally. **Fix:** apply the same `clean_text()` function to the text passed into `bilstm_predict_batch` (and into `predict_bilstm()` inside `app.py`'s Live Test callback) before splitting into tokens.
+- **The Home tab's results table is a static, hand-written snapshot** (`F1 = 1.00` for all three models) taken from the in-notebook training run, while the "Models & Metrics" tab correctly pulls live from `real_metrics.json`. These two can disagree (as they currently do for BiLSTM, per the point above) — worth updating the Home tab to read from `real_metrics.json` too rather than hardcoding numbers.
+- **Synthetic, templated corpus.** All reported near-perfect scores reflect the low diversity of the dataset (152 unique templates), not necessarily generalization to real, unstructured news text.
+- **Dev server / tunnel setup is not production-grade.** The Dash development server plus a Colab + `localtunnel` combination is convenient for demos but not meant for a persistent, public deployment — consider `gunicorn`/`waitress` behind a proper reverse proxy if this needs to run continuously.
 
 ---
 
 ## Tech Stack
 
-**NLP / ML:** spaCy, scikit-learn (TF-IDF, NMF, LDA, `GroupShuffleSplit`), PyTorch, Hugging Face `transformers` & `datasets`
+**NLP / ML:** spaCy, scikit-learn (TF-IDF, NMF, LDA, `GroupShuffleSplit`, `StratifiedGroupKFold`, class weighting), PyTorch, Hugging Face `transformers`, `datasets` & `evaluate`
 
-**Data / Viz:** pandas, NumPy, matplotlib, seaborn
+**Data / Viz:** pandas, NumPy, matplotlib, seaborn, `wordcloud`
 
-**Dashboard:** Plotly (graph objects, express), Dash, Dash Bootstrap Components
+**Dashboard:** Plotly (graph objects), Dash, Dash Bootstrap Components
 
 ---
 
 ## Authors
 
-Authors
-GROUP NAME: TransforMiners
-
-- Cheng Ting Francesca
-- Fonio Gabriella
-- Stranges Marco
+Developed by **Francesca** ([@francescachn](https://github.com/francescachn)) and collaborators as a Text Mining / NLP course project (Università Cattolica del Sacro Cuore) — this notebook's authorship trail (branch `Gabriella`) suggests Gabriella as a contributor on this iteration, alongside earlier work by others on the `Marco` branch. Update this section with full contributor credits.
 
 ---
 
-## Course
+## License
 
-Developed for Data Visualization and Text Mining course at Universita Cattolica del Sacro Cuore, Milan (IT).
-
+No license file is currently included in this repository. Add a `LICENSE` file (e.g. MIT) if you intend this project to be reused by others; until then, all rights are reserved by default.
