@@ -30,7 +30,7 @@ Developed for a Text Mining / NLP course project (Università Cattolica del Sacr
 - [Known Limitations & Notes](#known-limitations--notes)
 - [Tech Stack](#tech-stack)
 - [Authors](#authors)
-- [License](#license)
+- [Course](#course)
 
 ---
 
