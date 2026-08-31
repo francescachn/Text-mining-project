@@ -1,12 +1,11 @@
 # 📰 TransforMiners — News Text Mining & Classification
 
-A full text-mining pipeline that classifies short news snippets into five categories — **politics, business, entertainment, sports, technology** — combining classical topic modeling (NMF, LDA) with a from-scratch **BiLSTM** and fine-tuned **BERT** / **DistilBERT** transformers, all served through a fully-wired, real-model **Plotly Dash** dashboard. Developed for a Text Mining / NLP course project (Università Cattolica del Sacro Cuore).
+A full text-mining pipeline that classifies short news snippets into five categories — **politics, business, entertainment, sports, technology** — combining classical topic modeling (NMF, LDA) with a from-scratch **BiLSTM** and fine-tuned **BERT** / **DistilBERT** transformers, all served through a fully-wired, real-model **Plotly Dash** dashboard. 
+Developed for a Text Mining / NLP course project (Università Cattolica del Sacro Cuore).
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/francescachn/Text-mining-project/blob/Gabriella/TransforMiners%20Project.ipynb)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-
-> This README documents the project's current, most complete pipeline (notebook: `TransforMiners Project.ipynb`). Earlier iterations of the same idea exist on other branches of this repository (`main`, `Marco`) and are superseded by what's described here.
 
 ---
 
