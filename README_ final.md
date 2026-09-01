@@ -1,4 +1,4 @@
-# News Text Mining & Classification
+# TransforMiners — News Text Mining & Classification
 
 ## Overview
 
