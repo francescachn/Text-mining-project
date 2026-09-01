@@ -1,6 +1,7 @@
 # TransforMiners — News Text Mining & Classification
 
 A full text-mining pipeline that classifies short news snippets into five categories — **politics, business, entertainment, sports, technology** — combining classical topic modeling (NMF, LDA) with a from-scratch **BiLSTM** and fine-tuned **BERT** / **DistilBERT** transformers, all served through a fully-wired, real-model **Plotly Dash** dashboard. 
+\
 Developed for a Text Mining / NLP course project (Università Cattolica del Sacro Cuore).
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/francescachn/Text-mining-project/blob/Gabriella/TransforMiners%20Project.ipynb)
@@ -48,9 +49,7 @@ text-mining pipeline end to end:
 
 ```
 Text-mining-project/
-├── Copia_di_progetto_data_.ipynb   # main pipeline: EDA, cleaning, spaCy, NMF/LDA, BiLSTM, BERT, DistilBERT
-├── Progetto_con_Dashboard.ipynb    # saves dashboard artifacts, writes app.py, launches it (Colab + localtunnel)
-├── app.py                          # standalone Plotly Dash app, produced by `%%writefile` in the dashboard notebook
+├── TransforMiners Project.ipynb    # main pipeline: EDA, cleaning, spaCy, NMF/LDA, BiLSTM, BERT, DistilBERT, writes app.py
 ├── train.csv                       # training data — 3,200 rows: `content`, `category`
 ├── test.csv                        # held-out test data — 800 rows: `content` only
 └── README.md
