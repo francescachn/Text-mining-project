@@ -209,9 +209,10 @@ Data / Viz: pandas, NumPy, matplotlib, seaborn, wordcloud
 
 Dashboard: Plotly (graph objects, express), Dash, Dash Bootstrap Components
 
-Authors
 
 Group name: TransforMiners
+
+Authors:
 
 Cheng Ting Francesca
 
@@ -219,6 +220,4 @@ Fonio Gabriella
 
 Stranges Marco
 
-Course
-
-Developed for the Data Visualization and Text Mining course at Università Cattolica del Sacro Cuore, Milan (IT).
+Course Developed for the Data Visualization and Text Mining course at Università Cattolica del Sacro Cuore, Milan (IT).
