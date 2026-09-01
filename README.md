@@ -16,7 +16,7 @@ Developed for a Text Mining / NLP course project (Università Cattolica del Sacr
 - [Dataset](#dataset)
 - [Methodology](#methodology)
   - [1. EDA & Data Cleaning](#1-eda--data-cleaning)
-  - [2. Handling Data Leakage](#2-handling-data-leakage)
+  - [2. Handling Data Leakage](#2-data--split)
   - [3. Linguistic Analysis (spaCy)](#3-linguistic-analysis-spacy)
   - [4. Unsupervised Topic Modeling (NMF & LDA)](#4-unsupervised-topic-modeling-nmf--lda)
   - [5. Word Cloud](#5-word-cloud)
