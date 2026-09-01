@@ -194,40 +194,6 @@ Practical takeaways from the notebook:
 
 ## Dashboard
 
-`TransforMiners Project.ipynb` saves the trained model artifacts, computes the real
-validation-set metrics and EDA statistics, writes out a self-contained Plotly Dash
-application (`app.py`, dark theme via `dash-bootstrap-components`'s CYBORG theme), and
-launches it — currently from Google Colab via `localtunnel`, for a shareable public URL.
-
-Unlike an earlier iteration, the dashboard now loads the **actual trained checkpoints**
-(BiLSTM weights, fine-tuned BERT/DistilBERT, vocabulary, label encoder) and runs real
-forward passes for both the EDA and Live Test tabs — nothing is synthetic or hardcoded.
-
-| Tab | Contents |
-|---|---|
-| Home | Project overview, dataset characteristics, the data-leakage fix, and the final results table |
-| Dataset | Paginated table of the real training data (`category` + `content`) |
-| EDA | Seven sub-tabs: Category Distribution, Text Length (char/word count), Vocabulary Coverage Curve, POS-Tag Profile by Category, NMF Topics, LDA Topics, Word Cloud |
-| Models & Metrics | Comparison table (architecture, parameters, macro F1/precision/recall) and a confusion-matrix heatmap per model, computed on the real validation set |
-| Live Test | Free-text box + model selector (BiLSTM / DistilBERT / BERT-Base, any combination) + "Analyze" button, running real inference and returning a predicted category with a per-class probability bar chart |
-
-### Dashboard artifacts
-
-The dashboard notebook saves the following files (read by `app.py` at startup):
-
-- `bilstm_model_weights.pth`, `bilstm_config.json`, `bilstm_word_index.json` — BiLSTM
-  weights and vocabulary.
-- `label_encoder.pkl` — shared label encoder across all three models.
-- `distilbert_model/`, `bert_model/` — fine-tuned Hugging Face checkpoints
-  (`config.json` + weights + tokenizer, via `Trainer.save_model()`).
-- `real_train_data.csv` — the cleaned training dataframe, used by the Dataset and EDA tabs.
-- `real_metrics.json` — accuracy/macro F1/precision/recall/confusion matrix per model,
-  computed on the real validation set.
-- `eda_extra.json` — text-length arrays, vocabulary-coverage curve, POS distribution per
-  category, and NMF/LDA topic words.
-
-## Installation
-
 Requirements: Python 3.10+.
 
 ```bash
@@ -243,7 +209,6 @@ pip install dash dash-bootstrap-components plotly wordcloud
 
 A GPU is recommended (but not required) for fine-tuning BERT/DistilBERT.
 
-## Usage
 
 ### Run the analysis notebook
 
@@ -260,24 +225,7 @@ Locally, once `app.py` and its artifacts exist in the working directory:
 python app.py
 # then open http://localhost:8050
 ```
-
-From Google Colab (as authored in `TransforMiners Project.ipynb`), in the same runtime
-right after the main notebook's training cells:
-
-1. Run the cells that save the model artifacts, compute `real_metrics.json` and
-   `eda_extra.json`, and write `app.py`.
-2. Run the launch cell:
-   ```python
-   !pip install dash dash-bootstrap-components wordcloud transformers -q
-   !pkill -f "app.py"
-   !nohup python app.py > server.log 2>&1 &
-   ```
-3. Check `server.log` to confirm the app started without errors before opening the link.
-4. Open the tunnel:
-   ```python
-   !npx -y localtunnel --port 8050
-   ```
-   This prints a public `loca.lt` URL and a tunnel password (the Colab VM's outbound IP).
+ This prints a public `loca.lt` URL and a tunnel password (the Colab VM's outbound IP).
 
 ## Key Design Decisions
 
@@ -291,19 +239,6 @@ right after the main notebook's training cells:
 - Dropout (`p=0.3`) in the BiLSTM, added specifically to counter the overfitting risk
   created by a small, repetitive vocabulary.
 
-## Known Limitations & Future Work
-
-- **Synthetic, templated corpus.** The perfect F1 scores reflect the low diversity of the
-  dataset (152 unique templates), not necessarily generalization to real, unstructured
-  news text. Before any real-world deployment, models should be evaluated on genuinely
-  novel, noisy text.
-- **No early stopping** in the BiLSTM/BERT runs — worth adding if extending training
-  beyond the current epoch counts, especially on less templated data.
-- **Dependency-parse visualization** (`displacy`) is currently notebook-only; it is not
-  embedded in the dashboard's EDA tab.
-- **Production serving**: the Dash dev server (and the Colab/localtunnel setup) is
-  explicitly not meant for production; consider `gunicorn`/`waitress` behind a proper
-  reverse proxy for a persistent deployment.
 
 ## Tech Stack
 
