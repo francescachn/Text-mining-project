@@ -1,5 +1,7 @@
 # TransforMiners — News Text Mining & Classification
 
+A full text-mining pipeline that classifies short news snippets into five categories — politics, business, entertainment, sports, technology — combining classical topic modeling (NMF, LDA) with a from-scratch BiLSTM and fine-tuned BERT / DistilBERT transformers, all served through a fully-wired, real-model Plotly Dash dashboard. Developed for a Text Mining / NLP course project (Università Cattolica del Sacro Cuore).
+
 ## Overview
 
 Given a corpus of short, template-generated news headlines, this project builds a full
