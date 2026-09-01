@@ -34,7 +34,7 @@ Developed for a Text Mining / NLP course project (Università Cattolica del Sacr
 
 ---
 
-Overview
+# Overview
 
 Given a corpus of short, template-generated news headlines, this project builds a full text-mining pipeline end to end:
 
