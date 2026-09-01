@@ -236,8 +236,7 @@ python app.py
   verified with an explicit zero-overlap assertion.
 - `MAX_LEN=12`, sized empirically from the vocabulary-coverage and word-count analysis
   (documents average 6–7 words, max ~10–12).
-- Dropout (`p=0.3`) in the BiLSTM, added specifically to counter the overfitting risk
-  created by a small, repetitive vocabulary.
+
 
 
 ## Tech Stack
