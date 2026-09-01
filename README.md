@@ -268,14 +268,7 @@ python app.py
 - **Class-weighted loss for BiLSTM and DistilBERT**, added to counter the mild class imbalance introduced by grouping on 152 templates unevenly distributed across categories (20–40 templates per class).
 - **Real artifacts, not a mock, power the dashboard.** Model weights, tokenizers, the vocabulary, and the label encoder are all persisted to disk and reloaded by `app.py`, so "Live Test" reflects the actual trained models.
 
----
 
-## Known Limitations & Notes
-
-- **BiLSTM inference in `real_metrics.json`/the dashboard uses raw, uncleaned text.** The validation metrics that power the "Models & Metrics" tab call `bilstm_predict_batch(val_data["content"])` — the *raw* column — rather than `val_data["cleaned_content"]`. Since the BiLSTM's vocabulary (`word_index`) was built from lowercased, punctuation-stripped tokens, feeding it raw (capitalized, punctuated) text pushes many tokens to the `<UNK>` index, which is the most likely explanation for the accuracy drop from a perfect 1.00 (in-training) to 0.951 (post-reload). BERT/DistilBERT are far less affected because their WordPiece tokenizers already normalize case and punctuation internally. **Fix:** apply the same `clean_text()` function to the text passed into `bilstm_predict_batch` (and into `predict_bilstm()` inside `app.py`'s Live Test callback) before splitting into tokens.
-- **The Home tab's results table is a static, hand-written snapshot** (`F1 = 1.00` for all three models) taken from the in-notebook training run, while the "Models & Metrics" tab correctly pulls live from `real_metrics.json`. These two can disagree (as they currently do for BiLSTM, per the point above) — worth updating the Home tab to read from `real_metrics.json` too rather than hardcoding numbers.
-- **Synthetic, templated corpus.** All reported near-perfect scores reflect the low diversity of the dataset (152 unique templates), not necessarily generalization to real, unstructured news text.
-- **Dev server / tunnel setup is not production-grade.** The Dash development server plus a Colab + `localtunnel` combination is convenient for demos but not meant for a persistent, public deployment — consider `gunicorn`/`waitress` behind a proper reverse proxy if this needs to run continuously.
 
 ---
 
