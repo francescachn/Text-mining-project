@@ -67,7 +67,7 @@ words covering 80% of the corpus — again a signature of templated text.
 - Plotted word-count and vocabulary-coverage distributions to size later model
   hyperparameters (`MAX_LEN`, `MAX_VOCAB`).
 
-### 2. Avoiding Data Leakage
+### 2. Data Split
 
 Because many rows share identical text, a standard `train_test_split` (even stratified by
 category) can place copies of the same sentence in both the training and validation sets.
