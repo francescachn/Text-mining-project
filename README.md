@@ -1,4 +1,4 @@
-# 📰 TransforMiners — News Text Mining & Classification
+# TransforMiners — News Text Mining & Classification
 
 A full text-mining pipeline that classifies short news snippets into five categories — **politics, business, entertainment, sports, technology** — combining classical topic modeling (NMF, LDA) with a from-scratch **BiLSTM** and fine-tuned **BERT** / **DistilBERT** transformers, all served through a fully-wired, real-model **Plotly Dash** dashboard. 
 Developed for a Text Mining / NLP course project (Università Cattolica del Sacro Cuore).
@@ -20,8 +20,6 @@ Developed for a Text Mining / NLP course project (Università Cattolica del Sacr
   - [3. Linguistic Analysis (spaCy)](#3-linguistic-analysis-spacy)
   - [4. Unsupervised Topic Modeling (NMF & LDA)](#4-unsupervised-topic-modeling-nmf--lda)
   - [5. Word Cloud](#5-word-cloud)
-  - [6. Supervised Classification](#6-supervised-classification)
-  - [7. Persisting Model Artifacts](#7-persisting-model-artifacts)
 - [Results](#results)
 - [Dashboard](#dashboard)
 - [Tech Stack](#tech-stack)
@@ -246,12 +244,15 @@ Hugging Face `transformers` & `datasets`
 
 **Group name**: TransforMiners
 
-Authors:
+## Authors
 
-Cheng Ting Francesca
+**Group name**: TransforMiners
 
-Fonio Gabriella 
+- Cheng Ting Francesca
+- Fonio Gabriella
+- Stranges Marco
 
-Stranges Marco
+## Course
 
-Course Developed for the Data Visualization and Text Mining course at Università Cattolica del Sacro Cuore, Milan (IT).
+Developed for the Data Visualization and Text Mining course at Università Cattolica del
+Sacro Cuore, Milan (IT).
