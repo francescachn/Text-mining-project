@@ -160,7 +160,7 @@ Practical takeaways from the notebook:
 
 ## Dashboard
 
-`Progetto_con_Dashboard.ipynb` saves the trained model artifacts, computes the real
+`TransforMiners Project.ipynb` saves the trained model artifacts, computes the real
 validation-set metrics and EDA statistics, writes out a self-contained Plotly Dash
 application (`app.py`, dark theme via `dash-bootstrap-components`'s CYBORG theme), and
 launches it — currently from Google Colab via `localtunnel`, for a shareable public URL.
@@ -213,7 +213,7 @@ A GPU is recommended (but not required) for fine-tuning BERT/DistilBERT.
 
 ### Run the analysis notebook
 
-Open `Copia_di_progetto_data_.ipynb` in Jupyter or Colab. Run cells top-to-bottom — later
+Open `TransforMiners Project.ipynb` in Jupyter or Colab. Run cells top-to-bottom — later
 cells expect `train.csv`/`test.csv` to be present in the working directory, and the
 BiLSTM/BERT/DistilBERT training cells populate the in-memory objects that the dashboard
 notebook depends on.
@@ -227,7 +227,7 @@ python app.py
 # then open http://localhost:8050
 ```
 
-From Google Colab (as authored in `Progetto_con_Dashboard.ipynb`), in the same runtime
+From Google Colab (as authored in `TransforMiners Project.ipynb`), in the same runtime
 right after the main notebook's training cells:
 
 1. Run the cells that save the model artifacts, compute `real_metrics.json` and
