@@ -214,8 +214,11 @@ Authors
 Group name: TransforMiners
 
 Cheng Ting Francesca
+
 Fonio Gabriella 
+
 Stranges Marco
+
 Course
 
 Developed for the Data Visualization and Text Mining course at Università Cattolica del Sacro Cuore, Milan (IT).
